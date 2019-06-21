@@ -4,6 +4,7 @@ import time
 import struct
 import hashlib
 import sys
+import numpy
 
 x = []
 y = []
@@ -25,6 +26,8 @@ def printBinary(data, spacer='', breakOn=4):
         hstr = format(x, '08b') + spacer + hstr
         if breakOn != 0 and pos % breakOn == 0 and pos < len(data):
             hstr+="\n"
+    
+    print(hstr)
 
 def configurePlot():
   # plt.axis([0, 256, 0, 150])
@@ -50,27 +53,39 @@ def updatePlot():
   plt.pause(0.5)
   plt.draw()
 
-bitNumber = 0
-mask = int('11111111', 2)
-tick = Ticker()
+def genmask(n):
+  n = 32 - n
+  m = numpy.uint32(0)
+  for i in range(32, n, -1):
+    m = m + 2**(i-1)
 
-executePlot()
-nb = struct.pack('i', 26081992)
-h = hashlib.sha256()
-h.update(nb)
-for biggerValue in range(100):
-    tick()
-    bitNumber += 1
-    digest = h.digest()
-    byteToTest = digest[0]
-    # print((first & mask) == 0)
-    if ((byteToTest & mask) == 0):
-      x.append(bitNumber)
-      y.append(tick())
-      mask = int('11111111', 2)
-      updatePlot()
+  print(m)
+  nb = struct.pack('I', m)
+  printBinary(nb, " ")
+  return m
 
-    # print("Done in {}ms".format(tick()))
-    mask = mask << 1
+genmask(1)
+# bitNumber = 0
+# # mask = int('10000000', 2)
 
-plt.show()
+# executePlot()
+# nb = struct.pack('q', random.randrange(0, sys.maxsize))
+# h = hashlib.sha256()
+# h.update(nb)
+# for biggerValue in range(150):
+#     mask = genmask(int(biggerValue / 32))
+#     tick = Ticker()
+#     bitNumber += 1
+#     digest = h.digest()
+#     byteToTest = digest[0]
+#     # print((first & mask) == 0)
+#     if ((byteToTest & mask) == 0):
+#       x.append(bitNumber)
+#       y.append(tick())
+#       mask = genmask(0)
+#       updatePlot()
+
+#     # print("Done in {}ms".format(tick()))
+#     mask = mask << 1
+
+# plt.show()
