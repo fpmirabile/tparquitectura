@@ -14,13 +14,14 @@ def hashANumber():
   h = hashlib.sha256()
   h.update(nb)
   digest = h.digest()
-  print("Hash Created. Integer number: {}".format(int(h.hexdigest(), 16)))
   return digest  
 
 def testBitCollision(digest, bitNumber):
   # Length digest * 8 = 256 bits = MAX_BIT_SIZE
   mask = genmask(bitNumber, len(digest) * 8)
+  print("Generated mask: {}".format(format(mask, "08b")))
   digestBits = int.from_bytes(digest, 'big')
+  print("Generated digest: {}".format(format(digestBits, "08b")))
   result = digestBits & mask == 0
   return result
 

@@ -1,4 +1,5 @@
 import time
+import struct
 
 class Ticker:
     def __init__(self):
@@ -11,3 +12,15 @@ class Ticker:
 
 def genmask(bitMask, totalBitSize):
     return ((1 << bitMask) - 1) << (totalBitSize - bitMask)
+
+def printBinary(data, spacer='', breakOn=4):
+    hstr = ""
+    pos = 0
+    for x in data:
+        pos += 1
+        hstr = format(x, '08b') + spacer + hstr
+        if breakOn != 0 and pos % breakOn == 0 and pos < len(data):
+            hstr+="\n"
+    
+    print(hstr)
+    
