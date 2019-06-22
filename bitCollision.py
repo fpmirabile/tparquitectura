@@ -1,87 +1,49 @@
-import matplotlib.pyplot as plt
+from pyplot.plotHelper import configurePlot, updatePlot, executePlot, showPlot
+from utils.helpers import Ticker, genmask
 import random
-import time
 import struct
 import hashlib
 import sys
-import numpy
 
 x = []
 y = []
 MAX_BIT_RANGE = 256
-
-class Ticker:
-    def __init__(self):
-        self.t = time.time()
-    
-    def __call__(self):
-        dt = time.time() - self.t
-        # self.t = time.time()
-        return 1000 * dt
-
-def printBinary(data, spacer='', breakOn=4):
-    hstr = ""
-    pos = 0
-    for x in data:
-        pos += 1
-        hstr = format(x, '08b') + spacer + hstr
-        if breakOn != 0 and pos % breakOn == 0 and pos < len(data):
-            hstr+="\n"
-    
-    print(hstr)
-
-def configurePlot():
-  # plt.axis([0, MAX_BIT_RANGE, 0, 150])
-  plt.grid(True)
-  plt.title('Bit Collision')
-  plt.xlabel('Bits')
-  plt.ylabel('Time (miliseconds)')
-
-def executePlot():
-  configurePlot()
-  plt.plot(x, y)
-  plt.show(block=False)
-
-def updatePlot():
-  plt.plot(x, y)
-  plt.pause(0.5)
-  plt.draw()
-
-def genmask(n):
-  n = 32 - n
-  m = numpy.uint32(0)
-  for i in range(32, n, -1):
-    m = m + 2**(i-1)
-
-  # print(m)
-  # nb = struct.pack('I', m)
-  # printBinary(nb, " ")
-  return m
 
 def hashANumber():
   nb = struct.pack('q', random.randrange(0, sys.maxsize))
   h = hashlib.sha256()
   h.update(nb)
   digest = h.digest()
+  print("Hash Created. Integer number: {}".format(int(h.hexdigest(), 16)))
   return digest  
 
-def matchABit(digest, bitNumber, tick):
-  mask = genmask(bitNumber)
-
-  for digestIndex in range(len(digest)):
-    byteToTest = digest[digestIndex]
-    if ((byteToTest & mask) == 0):
-      x.append(bitNumber)
-      y.append(tick())
-      updatePlot()
-      break
+def testBitCollision(digest, bitNumber):
+  # Length digest * 8 = 256 bits = MAX_BIT_SIZE
+  mask = genmask(bitNumber, len(digest) * 8)
+  digestBits = int.from_bytes(digest, 'big')
+  result = digestBits & mask == 0
+  return result
 
 def execCollision():
-  tick = Ticker()
-  for bitNumber in range(1, MAX_BIT_RANGE + 1):
+  bitNumber = 1
+  retryTime = 0
+  tick = Ticker() 
+  while (bitNumber < MAX_BIT_RANGE):
+    print("Creating a new Hash...")
     digest = hashANumber()
-    matchABit(digest, bitNumber, tick)
+    result = testBitCollision(digest, bitNumber)
+    if (result): # Si hay colision => Sumamos 1 y ejecutamos el grafico
+      print("BitNumber: {} Found, going to: {}".format(bitNumber, bitNumber + 1))
+      x.append(bitNumber)
+      y.append(tick())
+      updatePlot(x, y)
+      bitNumber += 1
+      retryTime = 0
+    else:
+      print("BitNumber: {} Not found, looking again. Try number: {}".format(bitNumber, retryTime))
+      retryTime += 1
 
-executePlot()
+executePlot(x, y)
 execCollision()
-plt.show()
+# Fix para que no cierre la ventana
+showPlot()
