@@ -19,7 +19,7 @@ def hashANumber():
 def testBitCollision(digest, bitNumber):
   # Length digest * 8 = 256 bits = MAX_BIT_SIZE
   mask = genmask(bitNumber, len(digest) * 8)
-  print("Generated mask: {}".format(format(mask, "08b")))
+  print("Generated mask: {}".format(format(mask, "010b")))
   digestBits = int.from_bytes(digest, 'big')
   print("Generated digest: {}".format(format(digestBits, "08b")))
   result = digestBits & mask == 0
